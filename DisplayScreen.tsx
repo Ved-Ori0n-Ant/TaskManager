@@ -16,9 +16,10 @@ import realm from '../../realm/realm';
 import {Back, Correct, Delete, Edit, Plus} from '../../assets/svg';
 import styles from './ToDo.Styles';
 import DatePickerComponent from '../../components/DatePickerComponent';
+import CircularProgress from 'react-native-circular-progress-indicator';
 
 const HOME = require('../../assets/png/home.png');
-// const [value, setValue] = useState(0);
+const [progress, setProgress] = useState<any>(0);
 
 const Todo = () => {
   const route = useRoute();
@@ -168,38 +169,38 @@ const Todo = () => {
                 style={styles.textInput}
               />
             </View>
-            <View>
-              <Text style={styles.text}>Start Date : </Text>
-              <View style={{margin: 9}}>
-                <DatePickerComponent
-                  setdate={setStartDate}
-                  selectedDate={startDate}
+            <View style={{flexDirection: 'row'}}>
+              <View style={{flexDirection: 'column'}}>
+                <View>
+                  <Text style={styles.text}>Start Date : </Text>
+                  <View style={{margin: 9}}>
+                    <DatePickerComponent
+                      setdate={setStartDate}
+                      selectedDate={startDate}
+                    />
+                  </View>
+                </View>
+                <View>
+                  <Text style={styles.text}>Due Date : </Text>
+                  <View style={{margin: 9}}>
+                    <DatePickerComponent
+                      setdate={setdueDate}
+                      selectedDate={dueDate}
+                    />
+                  </View>
+                </View>
+              </View>
+              <View>
+                <Text style={styles.text}>Progress in %age</Text>
+                <TextInput 
+                  value ={progress.toString()}
+                  multiline={true}
+                  onChangeText={(value) => {
+                    setProgress(value);
+                  }}
+                  style={styles.textInput}
                 />
               </View>
-            </View>
-            <View>
-              <Text style={styles.text}>Due Date : </Text>
-              <View style={{margin: 9}}>
-                <DatePickerComponent
-                  setdate={setdueDate}
-                  selectedDate={dueDate}
-                />
-              </View>
-            </View>
-            <View>
-              {/* Add circular slider here */}
-              {/* <CircularProgress
-                radius={90}
-                value={85}
-                // textColor = {'#222'}
-                // fontSize={20}
-                valueSuffix={'%'}
-                inActiveStrokeColor={'#2ecc71'}
-                inActiveStrokeOpacity={0.2}
-                inActiveStrokeWidth={6}
-                duration={3000}
-                onAnimationComplete={() => setValue(50)}
-              /> */}
             </View>
             {addModelVisible ? (
               <TouchableOpacity
@@ -329,21 +330,44 @@ const Todo = () => {
                   <View style={{padding: 7}}>
                     <Text>{item.item.description}</Text>
                   </View>
-                  <View style={styles.date}>
-                    <Text style={styles.bold}>Start Date : </Text>
-                    <Text>{item.item.startDate.toLocaleDateString()}</Text>
+                  <View style={{flexDirection: 'row'}}>
+                    <View style={{flexDirection: 'column'}}>
+                      <View style={styles.date}>
+                        <Text style={styles.bold}>Start Date : </Text>
+                        <Text>{item.item.startDate.toLocaleDateString()}</Text>
+                      </View>
+                      <View style={styles.date}>
+                        <Text style={styles.bold}>Due Date : </Text>
+                        <Text>{item.item.dueDate.toLocaleDateString()}</Text>
+                      </View>
+                    </View>
+                    <View style={{flexDirection: 'column'}}>
+                      <View style={styles.date}>
+                        <Text style={styles.bold}>Created Date : </Text>
+                        <Text>
+                          {item.item.createdDate.toLocaleDateString()}
+                        </Text>
+                      </View>
+                      <View style={styles.date}>
+                        <Text style={styles.bold}>Updated Date : </Text>
+                        <Text>
+                          {item.item.updatedDate.toLocaleDateString()}
+                        </Text>
+                      </View>
+                    </View>
                   </View>
-                  <View style={styles.date}>
-                    <Text style={styles.bold}>Due Date : </Text>
-                    <Text>{item.item.dueDate.toLocaleDateString()}</Text>
-                  </View>
-                  <View style={styles.date}>
-                    <Text style={styles.bold}>Created Date : </Text>
-                    <Text>{item.item.createdDate.toLocaleDateString()}</Text>
-                  </View>
-                  <View style={styles.date}>
-                    <Text style={styles.bold}>Updated Date : </Text>
-                    <Text>{item.item.updatedDate.toLocaleDateString()}</Text>
+                  <View>
+                    <CircularProgress
+                      radius={90}
+                      value={progress}
+                      // textColor = {'#222'}
+                      // fontSize={20}
+                      valueSuffix={'%'}
+                      inActiveStrokeColor={'#2ecc71'}
+                      inActiveStrokeOpacity={0.2}
+                      inActiveStrokeWidth={6}
+                      duration={4000}
+                    />
                   </View>
                   <View style={styles.component}>
                     {/* <View style = {{flexDirection: 'column', justifyContent: 'center'}}> */}
@@ -381,7 +405,6 @@ const Todo = () => {
                     </TouchableOpacity>
                   </View>
                 </View>
-                {/* Add slider to show progress */}
                 {selectedId.map(selectedIds => {
                   if (
                     item.item._id.toHexString() === selectedIds.toHexString()
