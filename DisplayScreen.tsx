@@ -1,5 +1,14 @@
 import React, {useEffect, useState} from 'react';
-import { FlatList, Modal, Text, TextInput, TouchableOpacity, View, Image } from 'react-native';
+import {
+  FlatList,
+  Modal,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  Image,
+  Pressable,
+} from 'react-native';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import 'react-native-get-random-values';
 import CurdService from '../../realm/curd';
@@ -8,7 +17,8 @@ import {Back, Correct, Delete, Edit, Plus} from '../../assets/svg';
 import styles from './ToDo.Styles';
 import DatePickerComponent from '../../components/DatePickerComponent';
 
-const HOME = require('../../assets/png/home.png')
+const HOME = require('../../assets/png/home.png');
+// const [value, setValue] = useState(0);
 
 const Todo = () => {
   const route = useRoute();
@@ -16,12 +26,11 @@ const Todo = () => {
   const realmDb = realm.useRealm();
   const curd = CurdService();
   const {read, create, deleteToDo, updateToDo, toggleStatus} = curd;
-  const {user_id} = route.params;
+  const {user_id}: any = route.params;
   const [todos, setTodos] = useState<any>();
   const [isAnySelected, setIsAnySelected] = useState(false);
   let tempSelectedId: any[] = [];
   const [selectedId, setSelectedId] = useState<any[]>([]);
-
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [startDate, setStartDate] = useState(new Date());
@@ -31,12 +40,14 @@ const Todo = () => {
   const [id, setId] = useState<any>();
 
   useEffect(() => {
+    
     setTodos(read(user_id));
     try {
       realmDb.addListener('change', () => {
         setTodos(read(user_id));
       });
-    } catch (error) {
+    } 
+    catch (error) {
       console.log(error);
     }
 
@@ -48,13 +59,17 @@ const Todo = () => {
   useEffect(() => {
     if (selectedId.length > 0) {
       setIsAnySelected(true);
-    } else {
+    }
+    else {
       setIsAnySelected(false);
     }
   }, [selectedId.length, JSON.stringify(selectedId)]);
 
+  const [dimension, setDimension] = useState(25);
+
   return (
-    <View style = {{backgroundColor: 'powderblue', flex: 1}}>
+    <View style={{backgroundColor: '#5f33e1', flex: 1, borderWidth: 1}}>
+      {/*Header component*/}
       {isAnySelected ? (
         <View style={styles.headerComponent}>
           {selectedId.length === todos.length ? (
@@ -87,7 +102,7 @@ const Todo = () => {
           </TouchableOpacity>
         </View>
       ) : (
-        <View style={styles.headerComponent}>
+        <View style={styles.headerComponentForUnselected}>
           <View
             style={{
               flexDirection: 'row',
@@ -95,28 +110,36 @@ const Todo = () => {
               flex: 0.8,
               marginTop: 12,
               alignItems: 'center',
+              borderWidth: 1,
+              padding: 4,
+              borderRadius: 23,
+              backgroundColor: '#ffe5a4',
             }}>
-            <TouchableOpacity
+            <Pressable
+              onHoverOut={() => {
+                setDimension(dimension + 4);
+              }}
               onPress={() => {
                 navigation.goBack();
               }}>
-              <Back height={25} width={25} />
-            </TouchableOpacity>
-            <Text style = {{fontSize: 22, fontWeight: 'bold'}}>Todo's List</Text>
+              <Back height={dimension} width={dimension} />
+            </Pressable>
+            <Text style={{fontSize: 22, fontWeight: 'bold'}}>Todo's List</Text>
             <TouchableOpacity
               onPress={() => {
                 setAddModelVisible(true);
               }}
-              style = {{borderWidth: 1, padding: 2, borderRadius: 22}}
-            >
+              style={{borderWidth: 1, padding: 2, borderRadius: 22}}>
               <Plus height={25} width={25} />
             </TouchableOpacity>
           </View>
         </View>
       )}
+
+      {/*TODO details*/}
       <Modal
         visible={addModelVisible || editModelVisible}
-        animationType="slide"
+        animationType="fade"
         transparent={true}
         onRequestClose={() => {
           setAddModelVisible(false);
@@ -124,7 +147,7 @@ const Todo = () => {
         }}>
         <View>
           <View style={styles.modalContainer}>
-            <View style={styles.component}>
+            <View>
               <Text style={styles.text}>Title : </Text>
               <TextInput
                 value={title}
@@ -134,33 +157,49 @@ const Todo = () => {
                 style={styles.textInput}
               />
             </View>
-            <View style={styles.component}>
+            <View>
               <Text style={styles.text}>Description : </Text>
               <TextInput
                 value={description}
+                multiline={true}
                 onChangeText={value => {
                   setDescription(value);
                 }}
                 style={styles.textInput}
               />
             </View>
-            <View style={styles.component}>
+            <View>
               <Text style={styles.text}>Start Date : </Text>
-              <View style={{flex: 1}}>
+              <View style={{margin: 9}}>
                 <DatePickerComponent
                   setdate={setStartDate}
                   selectedDate={startDate}
                 />
               </View>
             </View>
-            <View style={styles.component}>
+            <View>
               <Text style={styles.text}>Due Date : </Text>
-              <View style={{flex: 1}}>
+              <View style={{margin: 9}}>
                 <DatePickerComponent
                   setdate={setdueDate}
                   selectedDate={dueDate}
                 />
               </View>
+            </View>
+            <View>
+              {/* Add circular slider here */}
+              {/* <CircularProgress
+                radius={90}
+                value={85}
+                // textColor = {'#222'}
+                // fontSize={20}
+                valueSuffix={'%'}
+                inActiveStrokeColor={'#2ecc71'}
+                inActiveStrokeOpacity={0.2}
+                inActiveStrokeWidth={6}
+                duration={3000}
+                onAnimationComplete={() => setValue(50)}
+              /> */}
             </View>
             {addModelVisible ? (
               <TouchableOpacity
@@ -203,17 +242,17 @@ const Todo = () => {
         onPress={() => {
           navigation.navigate('Home');
         }}
-        style = {{
-          borderTopWidth: 1, 
-          borderBottomWidth: 1, 
-          marginVertical: 7, 
-          padding: 5, 
-          width: 60, 
-          borderRightWidth: 1, 
+        style={{
+          borderTopWidth: 1,
+          borderBottomWidth: 1,
+          marginVertical: 7,
+          padding: 5,
+          width: 60,
+          borderRightWidth: 1,
+          // borderLeftWidth: 1,
           borderRadius: 4,
-          backgroundColor: '#f0f050'
-        }}
-      >
+          backgroundColor: '#a0a0a0c0',
+        }}>
         <Image source={HOME} />
       </TouchableOpacity>
       <FlatList
@@ -221,7 +260,7 @@ const Todo = () => {
         renderItem={item => {
           let alreadySelected = false;
           return (
-            <View style={{padding: 7,}}>
+            <View style={{padding: 7}}>
               <TouchableOpacity
                 onLongPress={() => {
                   if (selectedId.length === 0) {
@@ -274,9 +313,22 @@ const Todo = () => {
                     }
                   }),
                 ]}>
-                <Text style={styles.bold}>{item.item.title}</Text>
-                <Text style={styles.bold}>{item.item.description}</Text>
-                <View style={styles.component}>
+                <View
+                  style={{
+                    justifyContent: 'center',
+                    alignItems: 'flex-start',
+                    padding: 7,
+                    backgroundColor: '#ebe4ff',
+                  }}>
+                  <View>
+                    <Text style={{fontSize: 22, fontWeight: 'bold'}}>
+                      {item.item.title}
+                    </Text>
+                  </View>
+                  <Text style={styles.bold}>Description</Text>
+                  <View style={{padding: 7}}>
+                    <Text>{item.item.description}</Text>
+                  </View>
                   <View style={styles.date}>
                     <Text style={styles.bold}>Start Date : </Text>
                     <Text>{item.item.startDate.toLocaleDateString()}</Text>
@@ -285,13 +337,6 @@ const Todo = () => {
                     <Text style={styles.bold}>Due Date : </Text>
                     <Text>{item.item.dueDate.toLocaleDateString()}</Text>
                   </View>
-                </View>
-                {item.item.status ? (
-                  <Text style={styles.done}>Done</Text>
-                ) : (
-                  <Text style={styles.pending}>Pending</Text>
-                )}
-                <View style={styles.component}>
                   <View style={styles.date}>
                     <Text style={styles.bold}>Created Date : </Text>
                     <Text>{item.item.createdDate.toLocaleDateString()}</Text>
@@ -300,32 +345,43 @@ const Todo = () => {
                     <Text style={styles.bold}>Updated Date : </Text>
                     <Text>{item.item.updatedDate.toLocaleDateString()}</Text>
                   </View>
+                  <View style={styles.component}>
+                    {/* <View style = {{flexDirection: 'column', justifyContent: 'center'}}> */}
+                    <TouchableOpacity
+                      onPress={() => {
+                        setId(item.item._id);
+                        setTitle(item.item.title);
+                        setDescription(item.item.description);
+                        setStartDate(item.item.startDate);
+                        setdueDate(item.item.dueDate);
+                        setEditModelVisible(true);
+                      }}
+                      style={styles.buttonContaier}>
+                      <View style={styles.button}>
+                        <Edit height={35} width={35} />
+                      </View>
+                    </TouchableOpacity>
+                    {/* <Text>Edit Task</Text>
+                    </View> */}
+                    {/* <View> */}
+                    {item.item.status ? (
+                      <Text style={styles.done}>Done</Text>
+                    ) : (
+                      <Text style={styles.pending}>Pending</Text>
+                    )}
+                    {/* </View> */}
+                    <TouchableOpacity
+                      onPress={() => {
+                        deleteToDo(item.item._id);
+                      }}
+                      style={styles.buttonContaier}>
+                      <View style={styles.button}>
+                        <Delete height={35} width={35} />
+                      </View>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-                <View style={styles.component}>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setId(item.item._id);
-                      setTitle(item.item.title);
-                      setDescription(item.item.description);
-                      setStartDate(item.item.startDate);
-                      setdueDate(item.item.dueDate);
-                      setEditModelVisible(true);
-                    }}
-                    style={styles.buttonContaier}>
-                    <View style={styles.button}>
-                      <Edit height={35} width={35} />
-                    </View>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => {
-                      deleteToDo(item.item._id);
-                    }}
-                    style={styles.buttonContaier}>
-                    <View style={styles.button}>
-                      <Delete height={35} width={35} />
-                    </View>
-                  </TouchableOpacity>
-                </View>
+                {/* Add slider to show progress */}
                 {selectedId.map(selectedIds => {
                   if (
                     item.item._id.toHexString() === selectedIds.toHexString()
